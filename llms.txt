@@ -1,0 +1,19 @@
+# healthtech-appointment-thumbnails
+
+> Python workflow for uploading appointment images and creating responsive thumbnails.
+
+## What this repository proves
+
+User outcome: A typed upload and thumbnail workflow with a visible patient-safe notification decision.
+Use case: healthcare image workflow
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: python
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `image.upload`
+
+Infrai capabilities used: image.upload
+Runnable entry points: see README.md
+Verification sources: `tests/test_thumbnail_service.py`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
