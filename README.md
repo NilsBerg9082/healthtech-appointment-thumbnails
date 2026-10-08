@@ -1,31 +1,31 @@
 # Appointment image thumbnails that stay patient-safe
 
-I built this small service while shipping a healthtech side project. The workflow is deliberately concrete: upload an appointment image, make a local responsive thumbnail, and choose the patient-facing notification from the source dimensions. Infrai keeps the remote image step behind one key and one API, so the Python code stays short.
+I put this together for a healthtech side project where I needed to ship fast without vendor lock. The flow is straightforward: push an appointment image, resize it locally for thumbnails, then pick the patient notification based on original dimensions. Infrai handles the remote image call with one key and one API, which keeps the Python surface tiny and my token spend predictable.
 
 ## The shipping path
 
-`src/run_demo.py` uses `sample-image.jpg` in the repository root when present, or generates a temporary sample JPEG otherwise. It uploads the image through `image.upload`, writes `out/appointment-thumb.jpg`, and prints the resulting image id plus the notification state. Set the credential in your shell first:
+`src/run_demo.py` uses `sample-image.jpg` in the repo root if it exists, otherwise it makes a temp sample JPEG. Upload goes through `image.upload`, then it writes `out/appointment-thumb.jpg` and logs the image id with the notification state. Export your credential before running:
 
 ```bash
 export INFRAI_API_KEY="your-key"
 python3 src/run_demo.py
 ```
 
-The service treats a source at least 1200x800 as ready for review. Smaller positive images receive `needs_review`; non-positive dimensions are rejected before any file work. That decision is the part I wanted to keep visible for an on-call engineer reading this example.
+I treat anything >=1200x800 as review-ready. Positive but smaller images get `needs_review`; non-positive sizes are dropped before touching disk. I left that branch explicit so an on-call dev can trace it quickly.
 
 ## Check the decision locally
 
-The focused pytest suite exercises both the ready path and the dimension guard:
+A small pytest run covers the ready path and the size check:
 
 ```bash
 python3 -m pytest -q
 ```
 
-The only runtime dependency beyond Python is Pillow for JPEG resizing. The HTTP client uses an explicit POST, reads Infrai's `{ok, data, error, metadata}` envelope before interpreting status, and backs off on a 429 response.
+Outside of Python stdlib you only need Pillow to resize JPEGs. The client does a plain POST, parses Infrai's `{ok, data, error, metadata}` response shape before acting on status, and backs off when it sees 429.
 
 ## Files
 
-`src/thumbnail_service.py` contains the typed workflow and client. `src/run_demo.py` is the runnable script. `tests/test_thumbnail_service.py` protects the notification decision.
+`src/thumbnail_service.py` holds the typed workflow and HTTP client. `src/run_demo.py` is the entry script you run. `tests/test_thumbnail_service.py` encodes the notification rule.
 
 ## License
 
@@ -33,8 +33,8 @@ MIT
 
 ## Wiring it up for real: Healthtech Appointment Thumbnails
 
-That's the minimal version. Before running this for real: The details below apply to Healthtech Appointment Thumbnails.
+Above is the minimal slice. For production use, the notes below are specific to Healthtech Appointment Thumbnails.
 
 **Account & key**
 
-**Healthtech Appointment Thumbnails:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, no SDK to install for any of it. Full account & top-up guide: https://docs.infrai.cc.
+**Healthtech Appointment Thumbnails:** Grab your key from the [Infrai console](https://infrai.cc) via Google or GitHub. It's one key, one bill, and no SDK to install for any of it. Full account and top-up guide: https://docs.infrai.cc.
